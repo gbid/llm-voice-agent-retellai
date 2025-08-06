@@ -4,7 +4,9 @@ from typing import Optional, Literal
 from retell.types import CallResponse
 
 # Type definitions
-EscalationReason = Literal["verification_failed", "reschedule_failed", "user_declined", "agent_escalation"]
+EscalationReason = Literal[
+    "verification_failed", "reschedule_failed", "user_declined", "agent_escalation"
+]
 
 
 # RetellAI Webhook Types

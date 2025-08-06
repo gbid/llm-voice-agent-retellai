@@ -7,7 +7,7 @@ load_dotenv()
 app = FastAPI(
     title="Delivery Rescheduling API",
     description="API for handling package rescheduling via RetellAI voice agents",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Include API routers

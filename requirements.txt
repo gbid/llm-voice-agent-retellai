@@ -4,3 +4,4 @@ resend
 python-dotenv
 pydantic
 retell-sdk
+ruff

@@ -8,20 +8,18 @@ resend.api_key = os.getenv("RESEND_API_KEY")
 source_email = "onboarding@resend.dev"
 escalation_target_email = "escalation@bidlingmaier.net"
 
+
 def send_reschedule_confirmation_email(
-    customer_email: str,
-    customer_name: str,
-    tracking_number: str,
-    new_time: datetime
+    customer_email: str, customer_name: str, tracking_number: str, new_time: datetime
 ) -> bool:
     """Send confirmation email after successful package reschedule"""
-    
+
     if not resend.api_key:
         print("Warning: RESEND_API_KEY not configured")
         return False
-    
+
     formatted_time = new_time.strftime("%A, %B %d, %Y at %I:%M %p")
-    
+
     params: resend.Emails.SendParams = {
         "from": f"Delivery Service <{source_email}>",
         "to": [customer_email],
@@ -47,9 +45,9 @@ def send_reschedule_confirmation_email(
             Delivery Service Team</p>
         </body>
         </html>
-        """
+        """,
     }
-    
+
     try:
         email = resend.Emails.send(params)
         return email is not None
@@ -62,24 +60,26 @@ def send_escalation_email(
     customer_email: str,
     customer_name: str,
     tracking_number: str,
-    escalation_reason: EscalationReason
+    escalation_reason: EscalationReason,
 ) -> bool:
     """Send escalation notification to support team when issue needs human intervention"""
-    
+
     if not resend.api_key:
         print("Warning: RESEND_API_KEY not configured")
         return False
-    
+
     reason_messages = {
         "verification_failed": "Unable to verify package information",
-        "reschedule_failed": "Issue encountered while rescheduling delivery", 
+        "reschedule_failed": "Issue encountered while rescheduling delivery",
         "user_declined": "Customer declined proposed rescheduling options",
-        "agent_escalation": "Automated system needs additional assistance"
+        "agent_escalation": "Automated system needs additional assistance",
     }
-    
-    reason_message = reason_messages.get(escalation_reason, "Additional assistance needed")
+
+    reason_message = reason_messages.get(
+        escalation_reason, "Additional assistance needed"
+    )
     support_email = escalation_target_email
-    
+
     params: resend.Emails.SendParams = {
         "from": f"Delivery Service <{source_email}>",
         "to": [escalation_target_email],
@@ -97,14 +97,14 @@ def send_escalation_email(
                 <li><strong>Email:</strong> {customer_email}</li>
                 <li><strong>Tracking Number:</strong> {tracking_number}</li>
                 <li><strong>Escalation Type:</strong> {escalation_reason}</li>
-                <li><strong>Reference ID:</strong> ESC-{tracking_number}-{datetime.now().strftime('%Y%m%d')}</li>
-                <li><strong>Escalated At:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}</li>
+                <li><strong>Reference ID:</strong> ESC-{tracking_number}-{datetime.now().strftime("%Y%m%d")}</li>
+                <li><strong>Escalated At:</strong> {datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")}</li>
             </ul>
         </body>
         </html>
-        """
+        """,
     }
-    
+
     try:
         email = resend.Emails.send(params)
         return email is not None
