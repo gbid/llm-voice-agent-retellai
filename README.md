@@ -35,7 +35,10 @@ SQLite:
         tracking_number: str (unique constraint)
         customer_name: str
         phone: str
-        address (TODO: should we split this into postal code, street, street_number?)
+        email: str
+        postal_code: str
+        street: str
+        street_number: str
         status: scheduled | out_for_delivery | delivered
         scheduled_at: timestamp
     - table "call_logs":
