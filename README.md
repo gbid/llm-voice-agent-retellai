@@ -76,3 +76,6 @@ TODO:
         time intervals within timezones
         actual timing consideration for route planning
     Logging
+    More states for delivery
+    More robust authentication of calls based on phone number
+    Bonus exercise from problem statement
