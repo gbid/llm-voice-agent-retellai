@@ -40,7 +40,7 @@ SQLite:
         scheduled_at: timestamp
     - table "call_logs":
         id: primary key
-        tracking_number: optional str (unique constraint)
+        tracking_number: optional str
         transcript: optional str
         completed: optional timestamp
         escalated: optional timestamp
