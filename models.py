@@ -2,6 +2,9 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, Literal
 
+# Type definitions
+EscalationReason = Literal["verification_failed", "reschedule_failed", "user_declined", "agent_escalation"]
+
 
 class PackageCreate(BaseModel):
     tracking_number: str

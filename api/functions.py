@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Literal, Union
 from services.database import get_package_by_tracking_and_postal, update_package_schedule
+from services.email import send_reschedule_confirmation_email, send_escalation_email
+from models import EscalationReason
 
 router = APIRouter()
 
@@ -116,18 +118,18 @@ async def reschedule_package(request: RescheduleRequest) -> Union[RescheduleResp
             message="Failed to update package schedule in database"
         )
     
-    # TODO: Send confirmation email
-    # email_success = send_reschedule_confirmation_email(
-    #     customer_email=package.email,
-    #     customer_name=package.customer_name,
-    #     tracking_number=package.tracking_number,
-    #     new_time=request.target_time
-    # )
-    # if not email_success:
-    #     return EmailError(
-    #         error_type="email_error",
-    #         message="Package was rescheduled but confirmation email failed to send"
-    #     )
+    # Send confirmation email
+    email_success = send_reschedule_confirmation_email(
+        customer_email=package.email,
+        customer_name=package.customer_name,
+        tracking_number=package.tracking_number,
+        new_time=request.target_time
+    )
+    if not email_success:
+        return EmailError(
+            error_type="email_error",
+            message="Package was rescheduled but confirmation email failed to send"
+        )
     
     return RescheduleResponse(
         message="Package rescheduled successfully",
@@ -147,18 +149,19 @@ async def escalate_package(request: EscalateRequest) -> Union[EscalateResponse, 
             message="Package not found with the provided tracking number and postal code"
         )
     
-    # TODO: Send escalation email
-    # email_success = send_escalation_email(
-    #     customer_email=package.email,
-    #     customer_name=package.customer_name,
-    #     tracking_number=package.tracking_number,
-    #     escalation_reason="agent_escalation"
-    # )
-    # if not email_success:
-    #     return EmailError(
-    #         error_type="email_error",
-    #         message="Failed to send escalation email"
-    #     )
+    # Send escalation email  
+    escalation_reason: EscalationReason = "agent_escalation"
+    email_success = send_escalation_email(
+        customer_email=package.email,
+        customer_name=package.customer_name,
+        tracking_number=package.tracking_number,
+        escalation_reason=escalation_reason
+    )
+    if not email_success:
+        return EmailError(
+            error_type="email_error",
+            message="Failed to send escalation email"
+        )
     
     # TODO: Update call log with escalation
     
