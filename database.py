@@ -1,5 +1,4 @@
 import sqlite3
-import os
 from datetime import datetime, timedelta
 
 DATABASE_PATH = "delivery_service.db"

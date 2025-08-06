@@ -78,7 +78,6 @@ def send_escalation_email(
     reason_message = reason_messages.get(
         escalation_reason, "Additional assistance needed"
     )
-    support_email = escalation_target_email
 
     params: resend.Emails.SendParams = {
         "from": f"Delivery Service <{source_email}>",
