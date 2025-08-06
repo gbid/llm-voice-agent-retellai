@@ -27,6 +27,7 @@ Backend:
                     - verify_package failed
                     - delivery cannot be rescheduled
                         TODO: when is this the case, only upon server error on /reschedule endpoint?
+                            I think it's when the user does not confirm the reschedule in the end
 
 
 SQLite:
