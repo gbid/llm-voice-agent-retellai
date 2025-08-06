@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from database import get_db_connection
 from models import Package, CallLog
 
@@ -94,5 +94,60 @@ def update_call_log_escalated(log_id: int) -> bool:
         
         conn.commit()
         return cursor.rowcount > 0
+    finally:
+        conn.close()
+
+
+def get_all_packages() -> List[Package]:
+    """Get all packages"""
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("""
+            SELECT id, tracking_number, customer_name, phone, email, postal_code, 
+                   street, street_number, status, scheduled_at
+            FROM packages 
+            ORDER BY scheduled_at DESC
+        """)
+        
+        packages = []
+        for row in cursor.fetchall():
+            packages.append(Package(
+                id=row['id'],
+                tracking_number=row['tracking_number'],
+                customer_name=row['customer_name'],
+                phone=row['phone'],
+                email=row['email'],
+                postal_code=row['postal_code'],
+                street=row['street'],
+                street_number=row['street_number'],
+                status=row['status'],
+                scheduled_at=datetime.fromisoformat(row['scheduled_at'])
+            ))
+        return packages
+    finally:
+        conn.close()
+
+
+def get_all_call_logs() -> List[CallLog]:
+    """Get all call logs"""
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("""
+            SELECT id, tracking_number, transcript, completed, escalated, created_at
+            FROM call_logs 
+            ORDER BY created_at DESC
+        """)
+        
+        call_logs = []
+        for row in cursor.fetchall():
+            call_logs.append(CallLog(
+                id=row['id'],
+                tracking_number=row['tracking_number'],
+                transcript=row['transcript'],
+                completed=datetime.fromisoformat(row['completed']) if row['completed'] else None,
+                escalated=datetime.fromisoformat(row['escalated']) if row['escalated'] else None,
+                created_at=datetime.fromisoformat(row['created_at'])
+            ))
+        return call_logs
     finally:
         conn.close()
