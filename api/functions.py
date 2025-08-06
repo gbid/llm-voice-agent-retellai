@@ -1,0 +1,168 @@
+from fastapi import APIRouter
+from pydantic import BaseModel
+from datetime import datetime
+from typing import Literal, Union
+from services.database import get_package_by_tracking_and_postal, update_package_schedule
+
+router = APIRouter()
+
+
+class VerifyPackageRequest(BaseModel):
+    tracking_number: str
+    postal_code: str
+
+
+class VerifyPackageResponse(BaseModel):
+    tracking_number: str
+    customer_name: str
+    status: Literal["scheduled", "out_for_delivery", "delivered"]
+    scheduled_at: datetime
+
+
+class RescheduleRequest(BaseModel):
+    tracking_number: str
+    postal_code: str
+    target_time: datetime
+
+
+class RescheduleResponse(BaseModel):
+    message: str
+    tracking_number: str
+    new_schedule: datetime
+
+
+class EscalateRequest(BaseModel):
+    tracking_number: str
+    postal_code: str
+
+
+class EscalateResponse(BaseModel):
+    message: str
+    tracking_number: str
+
+
+# Error types
+class PackageNotFoundError(BaseModel):
+    error_type: Literal["package_not_found"]
+    message: str
+
+
+class PackageAlreadyDeliveredError(BaseModel):
+    error_type: Literal["package_already_delivered"]
+    message: str
+    current_status: str
+
+
+class DatabaseError(BaseModel):
+    error_type: Literal["database_error"]
+    message: str
+
+
+class EmailError(BaseModel):
+    error_type: Literal["email_error"]
+    message: str
+
+
+@router.post("/verify_package")
+async def verify_package(request: VerifyPackageRequest) -> Union[VerifyPackageResponse, PackageNotFoundError, PackageAlreadyDeliveredError]:
+    package = get_package_by_tracking_and_postal(request.tracking_number, request.postal_code)
+    
+    if not package:
+        return PackageNotFoundError(
+            error_type="package_not_found",
+            message="Package not found with the provided tracking number and postal code"
+        )
+    
+    # Business logic: only scheduled or out_for_delivery packages can be managed
+    if package.status not in ["scheduled", "out_for_delivery"]:
+        return PackageAlreadyDeliveredError(
+            error_type="package_already_delivered",
+            message="Package cannot be rescheduled because it has already been delivered",
+            current_status=package.status
+        )
+    
+    return VerifyPackageResponse(
+        tracking_number=package.tracking_number,
+        customer_name=package.customer_name,
+        status=package.status,
+        scheduled_at=package.scheduled_at
+    )
+
+
+@router.post("/reschedule")
+async def reschedule_package(request: RescheduleRequest) -> Union[RescheduleResponse, PackageNotFoundError, PackageAlreadyDeliveredError, DatabaseError, EmailError]:
+    # First verify package exists and can be rescheduled
+    package = get_package_by_tracking_and_postal(request.tracking_number, request.postal_code)
+    
+    if not package:
+        return PackageNotFoundError(
+            error_type="package_not_found",
+            message="Package not found with the provided tracking number and postal code"
+        )
+    
+    if package.status not in ["scheduled", "out_for_delivery"]:
+        return PackageAlreadyDeliveredError(
+            error_type="package_already_delivered",
+            message="Package cannot be rescheduled because it has already been delivered",
+            current_status=package.status
+        )
+    
+    # Update schedule
+    success = update_package_schedule(request.tracking_number, request.target_time)
+    
+    if not success:
+        return DatabaseError(
+            error_type="database_error",
+            message="Failed to update package schedule in database"
+        )
+    
+    # TODO: Send confirmation email
+    # email_success = send_reschedule_confirmation_email(
+    #     customer_email=package.email,
+    #     customer_name=package.customer_name,
+    #     tracking_number=package.tracking_number,
+    #     new_time=request.target_time
+    # )
+    # if not email_success:
+    #     return EmailError(
+    #         error_type="email_error",
+    #         message="Package was rescheduled but confirmation email failed to send"
+    #     )
+    
+    return RescheduleResponse(
+        message="Package rescheduled successfully",
+        tracking_number=request.tracking_number,
+        new_schedule=request.target_time
+    )
+
+
+@router.post("/escalate")
+async def escalate_package(request: EscalateRequest) -> Union[EscalateResponse, PackageNotFoundError, EmailError]:
+    # Get package info for escalation email
+    package = get_package_by_tracking_and_postal(request.tracking_number, request.postal_code)
+    
+    if not package:
+        return PackageNotFoundError(
+            error_type="package_not_found",
+            message="Package not found with the provided tracking number and postal code"
+        )
+    
+    # TODO: Send escalation email
+    # email_success = send_escalation_email(
+    #     customer_email=package.email,
+    #     customer_name=package.customer_name,
+    #     tracking_number=package.tracking_number,
+    #     escalation_reason="agent_escalation"
+    # )
+    # if not email_success:
+    #     return EmailError(
+    #         error_type="email_error",
+    #         message="Failed to send escalation email"
+    #     )
+    
+    # TODO: Update call log with escalation
+    
+    return EscalateResponse(
+        message="Escalation email sent successfully",
+        tracking_number=request.tracking_number
+    )
