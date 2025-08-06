@@ -1,9 +1,16 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, Literal
+from retell.types import CallResponse
 
 # Type definitions
 EscalationReason = Literal["verification_failed", "reschedule_failed", "user_declined", "agent_escalation"]
+
+
+# RetellAI Webhook Types
+class RetellWebhookPayload(BaseModel):
+    event: Literal["call_started", "call_ended", "call_analyzed"]
+    call: CallResponse
 
 
 class PackageCreate(BaseModel):
