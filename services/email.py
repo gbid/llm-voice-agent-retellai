@@ -5,7 +5,8 @@ from models import EscalationReason
 
 
 resend.api_key = os.getenv("RESEND_API_KEY")
-
+source_email = "noreply@bidlingmaier.net"
+escalation_target_email = "escalation@bidlingmaier.net"
 
 def send_reschedule_confirmation_email(
     customer_email: str,
@@ -22,7 +23,7 @@ def send_reschedule_confirmation_email(
     formatted_time = new_time.strftime("%A, %B %d, %Y at %I:%M %p")
     
     params: resend.Emails.SendParams = {
-        "from": "Delivery Service <noreply@delivery.com>",
+        "from": f"Delivery Service <{source_email}>",
         "to": [customer_email],
         "subject": f"Delivery Rescheduled - Package {tracking_number}",
         "html": f"""
@@ -77,11 +78,11 @@ def send_escalation_email(
     }
     
     reason_message = reason_messages.get(escalation_reason, "Additional assistance needed")
-    support_email = os.getenv("SUPPORT_EMAIL", "support@delivery.com")
+    support_email = escalation_target_email
     
     params: resend.Emails.SendParams = {
-        "from": "Delivery Service <noreply@delivery.com>",
-        "to": [support_email],
+        "from": f"Delivery Service <{source_email}>",
+        "to": [escalation_target_email],
         "subject": f"ESCALATION REQUIRED - Package {tracking_number}",
         "html": f"""
         <html>
