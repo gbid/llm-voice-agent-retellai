@@ -66,3 +66,13 @@ RetellAI:
         let confirmed = ask_user
         if !confirmed:
             escalate(tracking_number, postal_code)
+
+TODO:
+    How to handle concurrent calls for the same package?
+    Rate limiting (calls expensive)
+    Partial failures / transactions:
+        Reschedule and email confirmation does not happen atomically
+    Handle target times for reschedule properly (both in agent and backend)
+        time intervals within timezones
+        actual timing consideration for route planning
+    Logging
