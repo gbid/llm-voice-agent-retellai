@@ -5,7 +5,7 @@ from models import EscalationReason
 
 
 resend.api_key = os.getenv("RESEND_API_KEY")
-source_email = "noreply@bidlingmaier.net"
+source_email = "onboarding@resend.dev"
 escalation_target_email = "escalation@bidlingmaier.net"
 
 def send_reschedule_confirmation_email(
