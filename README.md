@@ -12,7 +12,7 @@ Backend:
         /events (handles webhook calls from RetellAI)
             - event "call_started" => insert entry into call_logs
             - event "call_ended" with call_object => update call_logs entry with transcript, completed
-                TODO: do we have to update "escalated" and "tracking_id" in the function calls?
+                TODO: do we have to update "escalated" and "tracking_number" in the function calls?
         /functions
             These functions can be called by the RetellAI voice agent in the course of conversations with a user:
             /verify_package(tracking_number: str, postal_code: str) -> Option<Package>
@@ -32,7 +32,7 @@ Backend:
 SQLite:
     - table "packages":
         id: primary key
-        tracking_id: str (unique constraint)
+        tracking_number: str (unique constraint)
         customer_name: str
         phone: str
         address (TODO: should we split this into postal code, street, street_number?)
@@ -40,7 +40,7 @@ SQLite:
         scheduled_at: timestamp
     - table "call_logs":
         id: primary key
-        tracking_id: optional str (unique constraint)
+        tracking_number: optional str (unique constraint)
         transcript: optional str
         completed: optional timestamp
         escalated: optional timestamp
