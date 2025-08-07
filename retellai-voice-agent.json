@@ -1,0 +1,330 @@
+{
+  "agent_id": "",
+  "channel": "voice",
+  "last_modification_timestamp": 1754568442089,
+  "agent_name": "Simple Delivery Rescheduler",
+  "response_engine": {
+    "type": "conversation-flow",
+    "version": 0,
+    "conversation_flow_id": "conversation_flow_e86e7e0c8d08"
+  },
+  "language": "en-US",
+  "opt_out_sensitive_data_storage": false,
+  "opt_in_signed_url": false,
+  "version": 0,
+  "is_published": false,
+  "post_call_analysis_model": "gpt-4o-mini",
+  "voice_id": "11labs-Cimo",
+  "max_call_duration_ms": 600000,
+  "interruption_sensitivity": 0.8,
+  "allow_user_dtmf": true,
+  "user_dtmf_options": {},
+  "retellLlmData": null,
+  "conversationFlow": {
+    "conversation_flow_id": "conversation_flow_e86e7e0c8d08",
+    "version": 0,
+    "global_prompt": "You are a helpful delivery rescheduling assistant. Always collect both tracking number and postal code before attempting verification. Guide customers through the rescheduling process step by step.",
+    "nodes": [
+      {
+        "instruction": {
+          "type": "static_text",
+          "text": "Hello! I'm here to help you reschedule your delivery. Please provide your tracking number and postal code."
+        },
+        "name": "Welcome",
+        "edges": [
+          {
+            "condition": "User provides tracking info",
+            "id": "edge-1",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User mentions tracking number and postal code"
+            },
+            "destination_node_id": "verify-package"
+          }
+        ],
+        "start_speaker": "agent",
+        "id": "welcome",
+        "type": "conversation",
+        "display_position": {
+          "x": 257.66156308532504,
+          "y": 323.69701869046924
+        }
+      },
+      {
+        "tool_id": "verify-package-tool",
+        "name": "Verify Package",
+        "edges": [
+          {
+            "condition": "Package verified",
+            "id": "edge-2",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "You got back a response object describing the package delivery."
+            },
+            "destination_node_id": "ask-time"
+          },
+          {
+            "destination_node_id": "escalate",
+            "id": "edge-1754571264566",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "You got back a response describing some error."
+            }
+          }
+        ],
+        "id": "verify-package",
+        "type": "function",
+        "tool_type": "local",
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 634.2102533459838,
+          "y": 380.2382744926035
+        },
+        "wait_for_result": true
+      },
+      {
+        "name": "Ask New Time",
+        "edges": [
+          {
+            "condition": "User provides time preference",
+            "id": "edge-4",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User mentions a time preference like morning, afternoon, or specific day"
+            },
+            "destination_node_id": "reschedule"
+          }
+        ],
+        "id": "ask-time",
+        "type": "conversation",
+        "display_position": {
+          "x": 1038.5071119921547,
+          "y": 163.68528377073793
+        },
+        "instruction": {
+          "type": "static_text",
+          "text": "Great! Your package is verified. When would you like to reschedule your delivery? Please say 'tomorrow morning', 'tomorrow afternoon', or 'Saturday morning'."
+        }
+      },
+      {
+        "tool_id": "reschedule-tool",
+        "name": "Reschedule",
+        "edges": [
+          {
+            "condition": "Reschedule successful",
+            "id": "edge-5",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "Rescheduling was successful"
+            },
+            "destination_node_id": "confirm"
+          },
+          {
+            "condition": "Reschedule failed",
+            "id": "edge-6",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "Rescheduling failed or error occurred"
+            },
+            "destination_node_id": "escalate"
+          }
+        ],
+        "id": "reschedule",
+        "type": "function",
+        "tool_type": "local",
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 1392.2727808304905,
+          "y": 183.31563934029032
+        },
+        "wait_for_result": true
+      },
+      {
+        "name": "Confirm",
+        "edges": [
+          {
+            "condition": "User confirms",
+            "id": "edge-7",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User confirms or says yes or sounds satisfied"
+            },
+            "destination_node_id": "success"
+          },
+          {
+            "condition": "User declines",
+            "id": "edge-8",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User declines, says no, or wants to change"
+            },
+            "destination_node_id": "escalate"
+          }
+        ],
+        "id": "confirm",
+        "type": "conversation",
+        "display_position": {
+          "x": 1810.772521509176,
+          "y": 171.05282265781025
+        },
+        "instruction": {
+          "type": "static_text",
+          "text": "Perfect! I've rescheduled your delivery. Is this correct and are you satisfied with the new time?"
+        }
+      },
+      {
+        "tool_id": "escalate-tool",
+        "name": "Escalate",
+        "edges": [
+          {
+            "condition": "Escalation complete",
+            "id": "edge-9",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "Escalation processed"
+            },
+            "destination_node_id": "end-call"
+          }
+        ],
+        "id": "escalate",
+        "type": "function",
+        "tool_type": "local",
+        "speak_during_execution": false,
+        "display_position": {
+          "x": 1479.1579493308043,
+          "y": 1001.5794933080332
+        },
+        "wait_for_result": true
+      },
+      {
+        "name": "Success",
+        "edges": [
+          {
+            "condition": "End call",
+            "id": "edge-10",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "Conversation complete"
+            },
+            "destination_node_id": "end-call"
+          }
+        ],
+        "id": "success",
+        "type": "conversation",
+        "display_position": {
+          "x": 2207.1662476129,
+          "y": 165.5217435452264
+        },
+        "instruction": {
+          "type": "static_text",
+          "text": "Excellent! Your delivery has been successfully rescheduled and you'll receive a confirmation email. Thank you for calling!"
+        }
+      },
+      {
+        "name": "End Call",
+        "id": "end-call",
+        "type": "end",
+        "display_position": {
+          "x": 2202.2195889133422,
+          "y": 940.1561340815947
+        },
+        "instruction": {
+          "type": "static_text",
+          "text": "Thank you for calling. Have a great day!"
+        }
+      }
+    ],
+    "start_node_id": "welcome",
+    "start_speaker": "agent",
+    "tools": [
+      {
+        "name": "verify_package",
+        "description": "Verify package ownership using tracking number and postal code",
+        "tool_id": "verify-package-tool",
+        "type": "custom",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "postal_code": {
+              "type": "string",
+              "description": "Customer postal code"
+            },
+            "tracking_number": {
+              "type": "string",
+              "description": "Package tracking number"
+            }
+          },
+          "required": [
+            "tracking_number",
+            "postal_code"
+          ]
+        },
+        "url": "https://5abb81e0ed13.ngrok-free.app/api/functions/verify_package"
+      },
+      {
+        "name": "reschedule",
+        "description": "Reschedule package delivery to new time",
+        "tool_id": "reschedule-tool",
+        "type": "custom",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "postal_code": {
+              "type": "string",
+              "description": "Customer postal code"
+            },
+            "target_time": {
+              "type": "string",
+              "description": "Target delivery time (e.g. '2025-08-10T14:00:00')"
+            },
+            "tracking_number": {
+              "type": "string",
+              "description": "Package tracking number"
+            }
+          },
+          "required": [
+            "tracking_number",
+            "postal_code",
+            "target_time"
+          ]
+        },
+        "url": "https://5abb81e0ed13.ngrok-free.app/api/functions/reschedule"
+      },
+      {
+        "name": "escalate",
+        "description": "Escalate to human agent when unable to help",
+        "tool_id": "escalate-tool",
+        "type": "custom",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "postal_code": {
+              "type": "string",
+              "description": "Customer postal code if available"
+            },
+            "tracking_number": {
+              "type": "string",
+              "description": "Package tracking number if available"
+            }
+          },
+          "required": [
+            "tracking_number",
+            "postal_code"
+          ]
+        },
+        "url": "https://5abb81e0ed13.ngrok-free.app/api/functions/escalate"
+      }
+    ],
+    "model_choice": {
+      "type": "cascading",
+      "model": "gpt-4.1"
+    },
+    "knowledge_base_ids": [],
+    "begin_tag_display_position": {
+      "x": 13.999999999999915,
+      "y": 331
+    },
+    "is_published": false
+  },
+  "llmURL": null
+}
