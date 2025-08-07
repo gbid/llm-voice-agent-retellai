@@ -1,9 +1,13 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
-from api import functions, webhooks, dashboard, health
 
-# Load environment variables from .env
+# Load environment variables from .env before importing our modules
+# so they have access to the env variables.
+# We could instead construct the client lazily in our modules,
+# but then we wouldn't get an instant error if a env var is missing.
 load_dotenv()
+
+from api import functions, webhooks, dashboard, health
 
 app = FastAPI(
     title="Delivery Rescheduling API",

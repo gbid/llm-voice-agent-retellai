@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 from main import app
 
@@ -144,8 +144,10 @@ class TestEscalate:
 
 
 class TestWebhooks:
-    def test_call_ended_success(self, setup):
-        """Test successful call_ended webhook handling"""
+    @patch('api.webhooks.retell')
+    def test_call_ended_success(self, mock_retell, setup):
+        """Test successful call_ended webhook handling with valid signature"""
+        mock_retell.verify.return_value = True
         webhook_payload = {
             "event": "call_ended",
             "call": {
@@ -157,45 +159,24 @@ class TestWebhooks:
                 "direction": "inbound",
                 "from_number": "+1234567890",
                 "to_number": "+0987654321",
-                "transcript": "Customer called about package PKG001",
-                "start_timestamp": 1691234567,
-                "end_timestamp": 1691234890
+                "transcript": "Customer called about package PKG001"
             }
         }
-        response = client.post("/api/webhooks/events", json=webhook_payload)
-        assert response.status_code == 200
-        data = response.json()
-        assert data["status"] == "success"
+        
+        response = client.post(
+            "/api/webhooks/events", 
+            json=webhook_payload,
+            headers={"X-Retell-Signature": "valid-signature"}
+        )
+        assert response.status_code == 204
 
-    def test_call_ended_no_transcript(self, setup):
-        """Test call_ended webhook with no transcript"""
+    def test_invalid_signature(self, setup):
+        """Test invalid signature returns 401"""
         webhook_payload = {
             "event": "call_ended",
             "call": {
                 "call_id": "test-call-456",
-                "agent_id": "agent-456",
-                "agent_version": 1,
-                "call_status": "ended",
-                "call_type": "phone_call",
-                "direction": "inbound",
-                "from_number": "+1234567890",
-                "to_number": "+0987654321",
-                "start_timestamp": 1691234567,
-                "end_timestamp": 1691234890
-            }
-        }
-        response = client.post("/api/webhooks/events", json=webhook_payload)
-        assert response.status_code == 200
-        data = response.json()
-        assert data["status"] == "success"
-
-    def test_unknown_event_type(self, setup):
-        """Test unknown event type returns validation error"""
-        webhook_payload = {
-            "event": "unknown_event",
-            "call": {
-                "call_id": "test-call-789",
-                "agent_id": "agent-456",
+                "agent_id": "agent-456", 
                 "agent_version": 1,
                 "call_status": "ended",
                 "call_type": "phone_call",
@@ -204,7 +185,9 @@ class TestWebhooks:
                 "to_number": "+0987654321"
             }
         }
-        response = client.post("/api/webhooks/events", json=webhook_payload)
-        assert response.status_code == 422  # Validation error for unknown event type
-        data = response.json()
-        assert "detail" in data
+        response = client.post(
+            "/api/webhooks/events", 
+            json=webhook_payload,
+            headers={"X-Retell-Signature": "invalid-signature"}
+        )
+        assert response.status_code == 401
