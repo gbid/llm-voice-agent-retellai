@@ -50,6 +50,7 @@ class Package(BaseModel):
 
 
 class CallLogCreate(BaseModel):
+    retell_call_id: str
     tracking_number: Optional[str] = None
     transcript: Optional[str] = None
     completed: Optional[datetime] = None
@@ -59,8 +60,14 @@ class CallLogCreate(BaseModel):
 
 class CallLog(BaseModel):
     id: int
+    retell_call_id: str
     tracking_number: Optional[str] = None
     transcript: Optional[str] = None
     completed: Optional[datetime] = None
     escalated: Optional[datetime] = None
     created_at: datetime
+
+
+class EscalationInfo(BaseModel):
+    tracking_number: str
+    escalated: str  # ISO datetime string from database

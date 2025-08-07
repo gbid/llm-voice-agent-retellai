@@ -61,6 +61,7 @@ def send_escalation_email(
     customer_name: str,
     tracking_number: str,
     escalation_reason: EscalationReason,
+    transcript: str = "",
 ) -> bool:
     """Send escalation notification to support team when issue needs human intervention"""
 
@@ -99,6 +100,9 @@ def send_escalation_email(
                 <li><strong>Reference ID:</strong> ESC-{tracking_number}-{datetime.now().strftime("%Y%m%d")}</li>
                 <li><strong>Escalated At:</strong> {datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")}</li>
             </ul>
+            
+            <h3>Call Transcript:</h3>
+            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; white-space: pre-wrap; font-family: monospace; margin: 10px 0;">{transcript if transcript else 'No transcript available'}</div>
         </body>
         </html>
         """,

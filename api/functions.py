@@ -2,14 +2,19 @@ from fastapi import APIRouter, Request
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Literal, Union
+import logging
 from services.database import (
     get_package_by_tracking_and_postal,
     update_package_schedule,
+    update_call_log_tracking_number,
+    update_call_log_escalated_by_retell_call_id,
+    get_call_transcript_by_retell_call_id,
 )
 from services.email import send_reschedule_confirmation_email, send_escalation_email
 from models import EscalationReason
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 class VerifyPackageArgs(BaseModel):
@@ -99,6 +104,13 @@ async def verify_package(
             error_type="package_not_found",
             message="Package not found with the provided tracking number and postal code",
         )
+
+    # Update call log with tracking number whenever package is found
+    retell_call_id = request.call.get("call_id")
+    if not retell_call_id:
+        logger.warning("Missing call_id in verify_package request")
+    else:
+        update_call_log_tracking_number(retell_call_id, request.args.tracking_number)
 
     # Business logic: only scheduled or out_for_delivery packages can be managed
     if package.status not in ["scheduled", "out_for_delivery"]:
@@ -190,21 +202,18 @@ async def escalate_package(
             message="Package not found with the provided tracking number and postal code",
         )
 
-    escalation_reason: EscalationReason = "agent_escalation"
-    email_success = send_escalation_email(
-        customer_email=package.email,
-        customer_name=package.customer_name,
-        tracking_number=package.tracking_number,
-        escalation_reason=escalation_reason,
-    )
-    if not email_success:
+    # Mark call log for escalation - email will be sent after call ends with full transcript
+    retell_call_id = request.call.get("call_id")
+    if not retell_call_id:
+        logger.error("Missing call_id in escalate request")
         return EmailError(
-            error_type="email_error", message="Failed to send escalation email"
+            error_type="email_error", 
+            message="Cannot escalate - missing call identification"
         )
-
-    # TODO: Update call log with escalation
+    
+    update_call_log_escalated_by_retell_call_id(retell_call_id)
 
     return EscalateResponse(
-        message="Escalation email sent successfully",
+        message="Escalation queued - email will be sent after call completion",
         tracking_number=request.args.tracking_number,
     )

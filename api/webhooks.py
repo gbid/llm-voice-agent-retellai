@@ -1,14 +1,23 @@
 import json
+import logging
 import os
 from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from retell import Retell
 from models import RetellWebhookPayload
-from services.database import create_call_log, update_call_log_completed
+from services.database import (
+    create_call_log, 
+    update_call_log_completed_by_retell_call_id,
+    get_escalation_info_by_retell_call_id,
+    get_package_by_tracking_number,
+)
+from services.email import send_escalation_email
+from models import EscalationReason
 
 retell = Retell(api_key=os.environ["RETELL_API_KEY"])
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/events")
@@ -22,8 +31,8 @@ async def handle_retell_webhook(request: Request):
             signature=str(request.headers.get("X-Retell-Signature")),
         )
         if not valid_signature:
-            print(
-                "Received Unauthorized",
+            logger.warning(
+                "Received unauthorized webhook: event=%s call_id=%s",
                 post_data["event"],
                 post_data.get("call", {}).get("call_id", "unknown"),
             )
@@ -31,26 +40,47 @@ async def handle_retell_webhook(request: Request):
 
         payload = RetellWebhookPayload(**post_data)
 
-        print(f"Received webhook event: {payload.event}")
+        logger.info("Received webhook event: %s", payload.event)
 
         match payload.event:
             case "call_started":
-                # TODO: RetellAI does not have a specification for call_started data
-                print(f"call_started payload: {payload.call}")
+                logger.debug("call_started payload: %s", payload.call)
+                if not payload.call.call_id:
+                    logger.error("Missing call_id in call_started webhook")
+                    return JSONResponse(status_code=400, content={"message": "Missing call_id"})
+                create_call_log(retell_call_id=payload.call.call_id)
                 return Response(status_code=204)
 
             case "call_ended":
-                print(f"call_ended payload: {payload.call}")
-                call_log_id = create_call_log(tracking_number=None)
-
+                logger.debug("call_ended payload: %s", payload.call)
+                if not payload.call.call_id:
+                    logger.error("Missing call_id in call_ended webhook")
+                    return JSONResponse(status_code=400, content={"message": "Missing call_id"})
+                
                 # TODO: does the RetellAI API guarantee the transcript is present here?
                 transcript = payload.call.transcript or ""
-                update_call_log_completed(call_log_id, transcript)
+                update_call_log_completed_by_retell_call_id(payload.call.call_id, transcript)
+
+                # Check if this call was escalated and send escalation email with full transcript
+                escalation_info = get_escalation_info_by_retell_call_id(payload.call.call_id)
+                if escalation_info:
+                    package = get_package_by_tracking_number(escalation_info.tracking_number)
+                    
+                    if package:
+                        escalation_reason: EscalationReason = "agent_escalation"
+                        send_escalation_email(
+                            customer_email=package.email,
+                            customer_name=package.customer_name,
+                            tracking_number=package.tracking_number,
+                            escalation_reason=escalation_reason,
+                            transcript=transcript,
+                        )
+                        logger.info("Escalation email sent for tracking %s", package.tracking_number)
 
                 return Response(status_code=204)
 
             case "call_analyzed":
-                print(f"call_analyzed payload: {payload.call}")
+                logger.debug("call_analyzed payload: %s", payload.call)
                 return Response(status_code=204)
 
             case _:
@@ -60,7 +90,7 @@ async def handle_retell_webhook(request: Request):
                 )
 
     except Exception as err:
-        print(f"Error in webhook: {err}")
+        logger.error("Error in webhook: %s", err, exc_info=True)
         return JSONResponse(
             status_code=500, content={"message": "Internal Server Error"}
         )

@@ -32,6 +32,7 @@ def init_database():
         
         CREATE TABLE IF NOT EXISTS call_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            retell_call_id TEXT NOT NULL UNIQUE,
             tracking_number TEXT,
             transcript TEXT,
             completed DATETIME,
@@ -40,6 +41,7 @@ def init_database():
         );
         
         CREATE INDEX IF NOT EXISTS idx_package_lookup ON packages (tracking_number, postal_code);
+        CREATE INDEX IF NOT EXISTS idx_call_logs_retell_call_id ON call_logs (retell_call_id);
     """)
 
     # Clear existing data and add fresh seed data
@@ -52,7 +54,7 @@ def init_database():
             "001",
             "John Smith",
             "+1234567890",
-            "john@example.com",
+            "gunther@bidlingmaier.net",
             "12345",
             "Main St",
             "123",
@@ -63,7 +65,7 @@ def init_database():
             "002",
             "Jane Doe",
             "+1987654321",
-            "jane@example.com",
+            "gunther@bidlingmaier.net",
             "67890",
             "Oak Ave",
             "456",
@@ -74,7 +76,7 @@ def init_database():
             "003",
             "Bob Wilson",
             "+1122334455",
-            "bob@example.com",
+            "gunther@bidlingmaier.net",
             "54321",
             "Pine Rd",
             "789",
