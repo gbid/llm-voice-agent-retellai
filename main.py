@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 
 # Load environment variables from .env before importing our modules
@@ -19,3 +20,5 @@ app.include_router(health.router, prefix="/api")
 app.include_router(functions.router, prefix="/api/functions")
 app.include_router(webhooks.router, prefix="/api/webhooks")
 app.include_router(dashboard.router, prefix="/api")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")

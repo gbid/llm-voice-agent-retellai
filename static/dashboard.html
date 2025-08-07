@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Rescheduling Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #4f46e5;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 12px 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        .status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .status.scheduled {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status.out_for_delivery {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status.delivered {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+        
+        .error {
+            background-color: #fee2e2;
+            color: #dc2626;
+            padding: 15px 20px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .timestamp {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            color: #6b7280;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Delivery Rescheduling Dashboard</h1>
+        
+        <div class="section">
+            <div class="section-header">
+                📦 Packages
+            </div>
+            <div id="packages-content">
+                <div class="loading">Loading packages...</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-header">
+                📞 Call Logs
+            </div>
+            <div id="call-logs-content">
+                <div class="loading">Loading call logs...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API base URL
+        const API_BASE = '/api';
+        
+        // Format datetime for display
+        function formatDateTime(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString();
+        }
+        
+        // Create status badge
+        function createStatusBadge(status) {
+            return `<span class="status ${status}">${status.replace('_', ' ')}</span>`;
+        }
+        
+        // Load packages data
+        async function loadPackages() {
+            try {
+                const response = await fetch(`${API_BASE}/packages`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const packages = await response.json();
+                const container = document.getElementById('packages-content');
+                
+                if (packages.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No packages found</div>';
+                    return;
+                }
+                
+                const tableHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tracking #</th>
+                                <th>Customer</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Scheduled At</th>
+                                <th>Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${packages.map(pkg => `
+                                <tr>
+                                    <td><strong>${pkg.tracking_number}</strong></td>
+                                    <td>${pkg.customer_name}</td>
+                                    <td>${pkg.email}</td>
+                                    <td>${createStatusBadge(pkg.status)}</td>
+                                    <td class="timestamp">${formatDateTime(pkg.scheduled_at)}</td>
+                                    <td>${pkg.street_number} ${pkg.street}, ${pkg.postal_code}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                
+                container.innerHTML = tableHTML;
+            } catch (error) {
+                document.getElementById('packages-content').innerHTML = 
+                    `<div class="error">Failed to load packages: ${error.message}</div>`;
+            }
+        }
+        
+        // Load call logs data
+        async function loadCallLogs() {
+            try {
+                const response = await fetch(`${API_BASE}/call_logs`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const callLogs = await response.json();
+                const container = document.getElementById('call-logs-content');
+                
+                if (callLogs.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No call logs found</div>';
+                    return;
+                }
+                
+                const tableHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Created At</th>
+                                <th>Tracking #</th>
+                                <th>Completed</th>
+                                <th>Escalated</th>
+                                <th>Transcript</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${callLogs.map(log => `
+                                <tr>
+                                    <td class="timestamp">${formatDateTime(log.created_at)}</td>
+                                    <td>${log.tracking_number || '-'}</td>
+                                    <td class="timestamp">${formatDateTime(log.completed)}</td>
+                                    <td class="timestamp">${formatDateTime(log.escalated)}</td>
+                                    <td>${log.transcript ? 
+                                        (log.transcript.length > 100 ? 
+                                            log.transcript.substring(0, 100) + '...' : 
+                                            log.transcript) 
+                                        : '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                
+                container.innerHTML = tableHTML;
+            } catch (error) {
+                document.getElementById('call-logs-content').innerHTML = 
+                    `<div class="error">Failed to load call logs: ${error.message}</div>`;
+            }
+        }
+        
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPackages();
+            loadCallLogs();
+        });
+        
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            loadPackages();
+            loadCallLogs();
+        }, 30000);
+    </script>
+</body>
+</html>
