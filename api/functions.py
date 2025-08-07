@@ -191,17 +191,7 @@ async def reschedule_package(
 @router.post("/escalate")
 async def escalate_package(
     request: RetellEscalateRequest,
-) -> Union[EscalateResponse, PackageNotFoundError, EmailError]:
-    package = get_package_by_tracking_and_postal(
-        request.args.tracking_number, request.args.postal_code
-    )
-
-    if not package:
-        return PackageNotFoundError(
-            error_type="package_not_found",
-            message="Package not found with the provided tracking number and postal code",
-        )
-
+) -> Union[EscalateResponse, EmailError]:
     # Mark call log for escalation - email will be sent after call ends with full transcript
     retell_call_id = request.call.get("call_id")
     if not retell_call_id:

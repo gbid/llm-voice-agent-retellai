@@ -1,6 +1,7 @@
 import os
 import resend
 from datetime import datetime
+from typing import Optional
 from models import EscalationReason
 
 
@@ -57,11 +58,11 @@ def send_reschedule_confirmation_email(
 
 
 def send_escalation_email(
-    customer_email: str,
-    customer_name: str,
     tracking_number: str,
     escalation_reason: EscalationReason,
     transcript: str = "",
+    customer_email: Optional[str] = None,
+    customer_name: Optional[str] = None,
 ) -> bool:
     """Send escalation notification to support team when issue needs human intervention"""
 
@@ -91,14 +92,14 @@ def send_escalation_email(
             
             <p><strong>Escalation Reason:</strong> {reason_message}</p>
             
-            <h3>Customer Information:</h3>
+            <h3>Escalation Details:</h3>
             <ul>
-                <li><strong>Name:</strong> {customer_name}</li>
-                <li><strong>Email:</strong> {customer_email}</li>
                 <li><strong>Tracking Number:</strong> {tracking_number}</li>
                 <li><strong>Escalation Type:</strong> {escalation_reason}</li>
                 <li><strong>Reference ID:</strong> ESC-{tracking_number}-{datetime.now().strftime("%Y%m%d")}</li>
                 <li><strong>Escalated At:</strong> {datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")}</li>
+                {f"<li><strong>Customer Name:</strong> {customer_name}</li>" if customer_name else ""}
+                {f"<li><strong>Customer Email:</strong> {customer_email}</li>" if customer_email else ""}
             </ul>
             
             <h3>Call Transcript:</h3>

@@ -76,19 +76,20 @@ async def handle_retell_webhook(request: Request):
                         escalation_info.tracking_number
                     )
 
-                    if package:
-                        escalation_reason: EscalationReason = "agent_escalation"
-                        send_escalation_email(
-                            customer_email=package.email,
-                            customer_name=package.customer_name,
-                            tracking_number=package.tracking_number,
-                            escalation_reason=escalation_reason,
-                            transcript=transcript,
-                        )
-                        logger.info(
-                            "Escalation email sent for tracking %s",
-                            package.tracking_number,
-                        )
+                    escalation_reason: EscalationReason = "agent_escalation"
+
+                    send_escalation_email(
+                        tracking_number=escalation_info.tracking_number,
+                        escalation_reason=escalation_reason,
+                        transcript=transcript,
+                        customer_email=package.email if package else None,
+                        customer_name=package.customer_name if package else None,
+                    )
+
+                    logger.info(
+                        "Escalation email sent for tracking %s",
+                        escalation_info.tracking_number,
+                    )
 
                 return Response(status_code=204)
 
