@@ -44,9 +44,7 @@ def init_database():
         CREATE INDEX IF NOT EXISTS idx_call_logs_retell_call_id ON call_logs (retell_call_id);
     """)
 
-    # Clear existing data and add fresh seed data
-    # TODO: Do not have this here in production!
-    conn.execute("DELETE FROM packages")
+    # Add seed data if not already present
 
     tomorrow = datetime.now() + timedelta(days=1)
     seed_packages = [
