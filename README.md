@@ -24,7 +24,7 @@ python database.py
 ngrok http 8000
 
 # Update retellai-voice-agent.json with your ngrok URL before importing
-# Replace placeholder URLs with your ngrok URL (e.g., https://abc123.ngrok.io)
+# Replace "https://5abb81e0ed13.ngrok-free.app" with your ngrok URL (3 occurrences)
 
 # Import retellai-voice-agent.json into RetellAI Web GUI (dashboard)
 # Go to RetellAI dashboard > Agents > Import Agent
