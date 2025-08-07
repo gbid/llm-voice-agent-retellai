@@ -1,6 +1,6 @@
 import json
 import os
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from retell import Retell
 from models import RetellWebhookPayload
@@ -29,26 +29,30 @@ async def handle_retell_webhook(request: Request):
             )
             return JSONResponse(status_code=401, content={"message": "Unauthorized"})
 
+        # Parse payload with WebCallResponse validation
         payload = RetellWebhookPayload(**post_data)
+        
+        print(f"Received webhook event: {payload.event}")
 
         match payload.event:
             case "call_started":
                 # TODO: RetellAI does not have a specification for call_started data
                 print(f"call_started payload: {payload.call}")
-                return JSONResponse(status_code=204, content=None)
+                return Response(status_code=204)
 
             case "call_ended":
-                call = payload.call
+                print(f"call_ended payload: {payload.call}")
                 call_log_id = create_call_log(tracking_number=None)
 
                 # TODO: does the RetellAI API guarantee the transcript is present here?
-                transcript = getattr(call, "transcript", "") or ""
+                transcript = payload.call.transcript or ""
                 update_call_log_completed(call_log_id, transcript)
 
-                return JSONResponse(status_code=204, content=None)
+                return Response(status_code=204)
 
             case "call_analyzed":
-                return JSONResponse(status_code=204, content=None)
+                print(f"call_analyzed payload: {payload.call}")
+                return Response(status_code=204)
 
             case _:
                 return JSONResponse(

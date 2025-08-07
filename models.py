@@ -1,17 +1,26 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, Literal
-from retell.types import CallResponse
-
 # Type definitions
 EscalationReason = Literal[
     "verification_failed", "reschedule_failed", "user_declined", "agent_escalation"
 ]
 
 
+# Custom webhook models - RetellAI webhook docs promise "all fields from call object"
+# but their SDK WebCallResponse/CallResponse types can't parse node_transition roles
+# in transcript_with_tool_calls that their actual webhooks send
+class RetellWebhookCall(BaseModel):
+    call_id: str
+    agent_id: str
+    call_status: str
+    transcript: Optional[str] = None
+    # Skip transcript_with_tool_calls - RetellAI SDK can't parse their own webhook data
+
+
 class RetellWebhookPayload(BaseModel):
     event: Literal["call_started", "call_ended", "call_analyzed"]
-    call: CallResponse
+    call: RetellWebhookCall
 
 
 class PackageCreate(BaseModel):
