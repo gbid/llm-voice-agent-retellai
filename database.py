@@ -42,11 +42,13 @@ def init_database():
         CREATE INDEX IF NOT EXISTS idx_package_lookup ON packages (tracking_number, postal_code);
     """)
 
-    # Add seed data
+    # Clear existing data and add fresh seed data
+    conn.execute("DELETE FROM packages")
+
     tomorrow = datetime.now() + timedelta(days=1)
     seed_packages = [
         (
-            "PKG001",
+            "001",
             "John Smith",
             "+1234567890",
             "john@example.com",
@@ -57,7 +59,7 @@ def init_database():
             tomorrow,
         ),
         (
-            "PKG002",
+            "002",
             "Jane Doe",
             "+1987654321",
             "jane@example.com",
@@ -68,7 +70,7 @@ def init_database():
             tomorrow + timedelta(hours=2),
         ),
         (
-            "PKG003",
+            "003",
             "Bob Wilson",
             "+1122334455",
             "bob@example.com",
