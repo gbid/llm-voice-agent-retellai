@@ -1,12 +1,12 @@
 {
   "agent_id": "",
   "channel": "voice",
-  "last_modification_timestamp": 1754568442089,
+  "last_modification_timestamp": 1754573828931,
   "agent_name": "Simple Delivery Rescheduler",
   "response_engine": {
     "type": "conversation-flow",
     "version": 0,
-    "conversation_flow_id": "conversation_flow_e86e7e0c8d08"
+    "conversation_flow_id": "conversation_flow_cf917fd21b25"
   },
   "language": "en-US",
   "opt_out_sensitive_data_storage": false,
@@ -21,7 +21,7 @@
   "user_dtmf_options": {},
   "retellLlmData": null,
   "conversationFlow": {
-    "conversation_flow_id": "conversation_flow_e86e7e0c8d08",
+    "conversation_flow_id": "conversation_flow_cf917fd21b25",
     "version": 0,
     "global_prompt": "You are a helpful delivery rescheduling assistant. Always collect both tracking number and postal code before attempting verification. Guide customers through the rescheduling process step by step.",
     "nodes": [
@@ -39,15 +39,39 @@
               "type": "prompt",
               "prompt": "User mentions tracking number and postal code"
             },
-            "destination_node_id": "verify-package"
+            "destination_node_id": "confirm-details"
           }
         ],
         "start_speaker": "agent",
         "id": "welcome",
         "type": "conversation",
         "display_position": {
-          "x": 257.66156308532504,
-          "y": 323.69701869046924
+          "x": -117.89410324926564,
+          "y": 326.05900401332826
+        }
+      },
+      {
+        "name": "Confirm Details",
+        "edges": [
+          {
+            "condition": "User confirms details",
+            "id": "edge-confirm",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "User confirms or says yes or agrees"
+            },
+            "destination_node_id": "verify-package"
+          }
+        ],
+        "id": "confirm-details",
+        "type": "conversation",
+        "display_position": {
+          "x": 246.8692622341208,
+          "y": 332.4479412914363
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Read back the tracking number and postal code that the customer provided to confirm you understood correctly. Ask them to confirm if the details are correct before proceeding with the lookup."
         }
       },
       {
@@ -64,7 +88,7 @@
             "destination_node_id": "ask-time"
           },
           {
-            "destination_node_id": "escalate",
+            "destination_node_id": "pre-escalate",
             "id": "edge-1754571264566",
             "transition_condition": {
               "type": "prompt",
@@ -77,8 +101,8 @@
         "tool_type": "local",
         "speak_during_execution": false,
         "display_position": {
-          "x": 634.2102533459838,
-          "y": 380.2382744926035
+          "x": 692.5157358114631,
+          "y": 339.5338972600135
         },
         "wait_for_result": true
       },
@@ -98,7 +122,7 @@
         "id": "ask-time",
         "type": "conversation",
         "display_position": {
-          "x": 1038.5071119921547,
+          "x": 1043.2310826378728,
           "y": 163.68528377073793
         },
         "instruction": {
@@ -126,7 +150,7 @@
               "type": "prompt",
               "prompt": "Rescheduling failed or error occurred"
             },
-            "destination_node_id": "escalate"
+            "destination_node_id": "pre-escalate"
           }
         ],
         "id": "reschedule",
@@ -158,7 +182,7 @@
               "type": "prompt",
               "prompt": "User declines, says no, or wants to change"
             },
-            "destination_node_id": "escalate"
+            "destination_node_id": "pre-escalate"
           }
         ],
         "id": "confirm",
@@ -168,8 +192,32 @@
           "y": 171.05282265781025
         },
         "instruction": {
-          "type": "static_text",
-          "text": "Perfect! I've rescheduled your delivery. Is this correct and are you satisfied with the new time?"
+          "type": "prompt",
+          "text": "Confirm the rescheduling details with the customer based on the successful reschedule response you received. Tell them the specific new delivery time and ask if they're satisfied with this new schedule."
+        }
+      },
+      {
+        "name": "Pre-Escalate Explanation",
+        "edges": [
+          {
+            "condition": "Continue to escalation",
+            "id": "edge-pre-escalate",
+            "transition_condition": {
+              "type": "prompt",
+              "prompt": "Always transition immediately after delivering the explanation"
+            },
+            "destination_node_id": "escalate"
+          }
+        ],
+        "id": "pre-escalate",
+        "type": "conversation",
+        "display_position": {
+          "x": 1200,
+          "y": 800
+        },
+        "instruction": {
+          "type": "prompt",
+          "text": "Explain to the customer what went wrong based on the error you encountered. Apologize for not being able to complete their request. Tell them you're sending their case to our support team via email, that a human agent will review their situation and contact them with next steps, and that you'll end the call now. After delivering this explanation, immediately proceed to escalate without waiting for user response."
         }
       },
       {
@@ -191,8 +239,8 @@
         "tool_type": "local",
         "speak_during_execution": false,
         "display_position": {
-          "x": 1479.1579493308043,
-          "y": 1001.5794933080332
+          "x": 1620.877068702348,
+          "y": 1015.7514052451875
         },
         "wait_for_result": true
       },
@@ -216,8 +264,8 @@
           "y": 165.5217435452264
         },
         "instruction": {
-          "type": "static_text",
-          "text": "Excellent! Your delivery has been successfully rescheduled and you'll receive a confirmation email. Thank you for calling!"
+          "type": "prompt",
+          "text": "Thank the customer for their call and confirm that their delivery has been successfully rescheduled. Remind them they'll receive a confirmation email with the details and provide a warm, professional closing to end the call."
         }
       },
       {
@@ -321,8 +369,8 @@
     },
     "knowledge_base_ids": [],
     "begin_tag_display_position": {
-      "x": 13.999999999999915,
-      "y": 331
+      "x": -243.45640019163775,
+      "y": 333.3619853228591
     },
     "is_published": false
   },
