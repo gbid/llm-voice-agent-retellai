@@ -15,7 +15,11 @@ cp .env.example .env
 # Initialize database with test data
 python database.py
 
-# Run server
+# For local development, expose server with ngrok (required for RetellAI webhooks)
+# Install ngrok from https://ngrok.com/download
+ngrok http 8000
+
+# Run server (in separate terminal)
 uvicorn main:app --reload
 ```
 
@@ -107,4 +111,5 @@ Test data includes tracking numbers: 001, 002, 003 with postal codes 12345, 6789
 - **Function call authentication** - Currently only webhook calls are signature-verified, but function calls (/api/functions/*) should also be authenticated to prevent unauthorized access
   - I guess technically, a caller needs the same info (tracking_number, postal_code) to call the endpoint directly as calling it via the RetellAI voice agent.
     However, we still do not want to prevent direct API access to the functionality for security reasons.
+- **Serverless deployment** - Deploy to AWS Lambda/Vercel/Railway as mentioned in problem statement instead of local server
 - **Bonus exercise from problem statement** (Post-Call QA with LLM and call log)
