@@ -12,6 +12,10 @@ pip install -r requirements.txt
 # Add your API keys to .env
 cp .env.example .env
 
+# Replace email addresses with your own for testing
+# In services/email.py: replace "escalation@bidlingmaier.net" with your email
+# In database.py: replace "gunther@bidlingmaier.net" with your email (3 occurrences)
+
 # Initialize database with test data
 python database.py
 
