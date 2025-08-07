@@ -30,10 +30,16 @@ class VerifyPackageResponse(BaseModel):
     scheduled_at: datetime
 
 
-class RescheduleRequest(BaseModel):
+class RescheduleArgs(BaseModel):
     tracking_number: str
     postal_code: str
     target_time: datetime
+
+
+class RetellRescheduleRequest(BaseModel):
+    call: dict
+    name: Literal["reschedule"]
+    args: RescheduleArgs
 
 
 class RescheduleResponse(BaseModel):
@@ -42,9 +48,15 @@ class RescheduleResponse(BaseModel):
     new_schedule: datetime
 
 
-class EscalateRequest(BaseModel):
+class EscalateArgs(BaseModel):
     tracking_number: str
     postal_code: str
+
+
+class RetellEscalateRequest(BaseModel):
+    call: dict
+    name: Literal["escalate"]
+    args: EscalateArgs
 
 
 class EscalateResponse(BaseModel):
@@ -106,7 +118,7 @@ async def verify_package(
 
 @router.post("/reschedule")
 async def reschedule_package(
-    request: RescheduleRequest,
+    request: RetellRescheduleRequest,
 ) -> Union[
     RescheduleResponse,
     PackageNotFoundError,
@@ -116,7 +128,7 @@ async def reschedule_package(
 ]:
     # First verify package exists and can be rescheduled
     package = get_package_by_tracking_and_postal(
-        request.tracking_number, request.postal_code
+        request.args.tracking_number, request.args.postal_code
     )
 
     if not package:
@@ -133,7 +145,9 @@ async def reschedule_package(
         )
 
     # Update schedule
-    success = update_package_schedule(request.tracking_number, request.target_time)
+    success = update_package_schedule(
+        request.args.tracking_number, request.args.target_time
+    )
 
     if not success:
         return DatabaseError(
@@ -146,7 +160,7 @@ async def reschedule_package(
         customer_email=package.email,
         customer_name=package.customer_name,
         tracking_number=package.tracking_number,
-        new_time=request.target_time,
+        new_time=request.args.target_time,
     )
     if not email_success:
         return EmailError(
@@ -156,18 +170,18 @@ async def reschedule_package(
 
     return RescheduleResponse(
         message="Package rescheduled successfully",
-        tracking_number=request.tracking_number,
-        new_schedule=request.target_time,
+        tracking_number=request.args.tracking_number,
+        new_schedule=request.args.target_time,
     )
 
 
 @router.post("/escalate")
 async def escalate_package(
-    request: EscalateRequest,
+    request: RetellEscalateRequest,
 ) -> Union[EscalateResponse, PackageNotFoundError, EmailError]:
     # Get package info for escalation email
     package = get_package_by_tracking_and_postal(
-        request.tracking_number, request.postal_code
+        request.args.tracking_number, request.args.postal_code
     )
 
     if not package:
@@ -193,5 +207,5 @@ async def escalate_package(
 
     return EscalateResponse(
         message="Escalation email sent successfully",
-        tracking_number=request.tracking_number,
+        tracking_number=request.args.tracking_number,
     )
