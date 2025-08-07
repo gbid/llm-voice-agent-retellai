@@ -104,4 +104,7 @@ Test data includes tracking numbers: 001, 002, 003 with postal codes 12345, 6789
   - monitor number of ongoing calls, number of escalations in last hour / day / week using Grafana or similar tools
 - **More states for delivery**
 - **More robust authentication of calls** based on phone number saved in package details
+- **Function call authentication** - Currently only webhook calls are signature-verified, but function calls (/api/functions/*) should also be authenticated to prevent unauthorized access
+  - I guess technically, a caller needs the same info (tracking_number, postal_code) to call the endpoint directly as calling it via the RetellAI voice agent.
+    However, we still do not want to prevent direct API access to the functionality for security reasons.
 - **Bonus exercise from problem statement** (Post-Call QA with LLM and call log)
