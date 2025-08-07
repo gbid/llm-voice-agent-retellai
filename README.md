@@ -19,6 +19,12 @@ python database.py
 # Install ngrok from https://ngrok.com/download
 ngrok http 8000
 
+# Update retellai-voice-agent.json with your ngrok URL before importing
+# Replace placeholder URLs with your ngrok URL (e.g., https://abc123.ngrok.io)
+
+# Import retellai-voice-agent.json into RetellAI Web GUI (dashboard)
+# Go to RetellAI dashboard > Agents > Import Agent
+
 # Run server (in separate terminal)
 uvicorn main:app --reload
 ```
