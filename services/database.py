@@ -193,9 +193,10 @@ def get_escalation_info_by_retell_call_id(
             (retell_call_id,),
         )
         row = cursor.fetchone()
-        if row and row["tracking_number"]:  # Ensure tracking_number is not None
+        if row:
             return EscalationInfo(
-                tracking_number=row["tracking_number"], escalated=row["escalated"]
+                tracking_number=row["tracking_number"] or "unknown",
+                escalated=row["escalated"],
             )
         return None
     finally:
