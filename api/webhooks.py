@@ -29,7 +29,6 @@ async def handle_retell_webhook(request: Request):
             )
             return JSONResponse(status_code=401, content={"message": "Unauthorized"})
 
-        # Parse payload with WebCallResponse validation
         payload = RetellWebhookPayload(**post_data)
 
         print(f"Received webhook event: {payload.event}")

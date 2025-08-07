@@ -126,7 +126,10 @@ async def reschedule_package(
     DatabaseError,
     EmailError,
 ]:
-    # First verify package exists and can be rescheduled
+    # TODO: Improve time handling for natural language inputs
+    # Currently the LLM converts "tomorrow morning" -> "2025-08-10T09:00:00"
+    # Issues: ambiguous times, no validation, timezone handling
+    # Should add: predefined time slots, input validation, timezone awareness
     package = get_package_by_tracking_and_postal(
         request.args.tracking_number, request.args.postal_code
     )
@@ -144,7 +147,6 @@ async def reschedule_package(
             current_status=package.status,
         )
 
-    # Update schedule
     success = update_package_schedule(
         request.args.tracking_number, request.args.target_time
     )
@@ -155,7 +157,6 @@ async def reschedule_package(
             message="Failed to update package schedule in database",
         )
 
-    # Send confirmation email
     email_success = send_reschedule_confirmation_email(
         customer_email=package.email,
         customer_name=package.customer_name,
@@ -179,7 +180,6 @@ async def reschedule_package(
 async def escalate_package(
     request: RetellEscalateRequest,
 ) -> Union[EscalateResponse, PackageNotFoundError, EmailError]:
-    # Get package info for escalation email
     package = get_package_by_tracking_and_postal(
         request.args.tracking_number, request.args.postal_code
     )
@@ -190,7 +190,6 @@ async def escalate_package(
             message="Package not found with the provided tracking number and postal code",
         )
 
-    # Send escalation email
     escalation_reason: EscalationReason = "agent_escalation"
     email_success = send_escalation_email(
         customer_email=package.email,
