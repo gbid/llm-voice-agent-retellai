@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Literal, Union
@@ -12,9 +12,14 @@ from models import EscalationReason
 router = APIRouter()
 
 
-class VerifyPackageRequest(BaseModel):
+class VerifyPackageArgs(BaseModel):
     tracking_number: str
     postal_code: str
+
+class RetellVerifyPackageRequest(BaseModel):
+    call: dict
+    name: Literal["verify_package"]
+    args: VerifyPackageArgs
 
 
 class VerifyPackageResponse(BaseModel):
@@ -70,10 +75,10 @@ class EmailError(BaseModel):
 
 @router.post("/verify_package")
 async def verify_package(
-    request: VerifyPackageRequest,
+    request: RetellVerifyPackageRequest,
 ) -> Union[VerifyPackageResponse, PackageNotFoundError, PackageAlreadyDeliveredError]:
     package = get_package_by_tracking_and_postal(
-        request.tracking_number, request.postal_code
+        request.args.tracking_number, request.args.postal_code
     )
 
     if not package:
