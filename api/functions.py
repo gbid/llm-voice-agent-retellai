@@ -16,6 +16,7 @@ class VerifyPackageArgs(BaseModel):
     tracking_number: str
     postal_code: str
 
+
 class RetellVerifyPackageRequest(BaseModel):
     call: dict
     name: Literal["verify_package"]

@@ -31,7 +31,7 @@ async def handle_retell_webhook(request: Request):
 
         # Parse payload with WebCallResponse validation
         payload = RetellWebhookPayload(**post_data)
-        
+
         print(f"Received webhook event: {payload.event}")
 
         match payload.event:
@@ -56,7 +56,8 @@ async def handle_retell_webhook(request: Request):
 
             case _:
                 return JSONResponse(
-                    status_code=400, content={"message": f"Unknown event type: {payload.event}"}
+                    status_code=400,
+                    content={"message": f"Unknown event type: {payload.event}"},
                 )
 
     except Exception as err:

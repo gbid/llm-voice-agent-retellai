@@ -144,7 +144,7 @@ class TestEscalate:
 
 
 class TestWebhooks:
-    @patch('api.webhooks.retell')
+    @patch("api.webhooks.retell")
     def test_call_ended_success(self, mock_retell, setup):
         """Test successful call_ended webhook handling with valid signature"""
         mock_retell.verify.return_value = True
@@ -159,14 +159,14 @@ class TestWebhooks:
                 "direction": "inbound",
                 "from_number": "+1234567890",
                 "to_number": "+0987654321",
-                "transcript": "Customer called about package PKG001"
-            }
+                "transcript": "Customer called about package PKG001",
+            },
         }
-        
+
         response = client.post(
-            "/api/webhooks/events", 
+            "/api/webhooks/events",
             json=webhook_payload,
-            headers={"X-Retell-Signature": "valid-signature"}
+            headers={"X-Retell-Signature": "valid-signature"},
         )
         assert response.status_code == 204
 
@@ -176,18 +176,18 @@ class TestWebhooks:
             "event": "call_ended",
             "call": {
                 "call_id": "test-call-456",
-                "agent_id": "agent-456", 
+                "agent_id": "agent-456",
                 "agent_version": 1,
                 "call_status": "ended",
                 "call_type": "phone_call",
                 "direction": "inbound",
                 "from_number": "+1234567890",
-                "to_number": "+0987654321"
-            }
+                "to_number": "+0987654321",
+            },
         }
         response = client.post(
-            "/api/webhooks/events", 
+            "/api/webhooks/events",
             json=webhook_payload,
-            headers={"X-Retell-Signature": "invalid-signature"}
+            headers={"X-Retell-Signature": "invalid-signature"},
         )
         assert response.status_code == 401
