@@ -59,7 +59,7 @@ Test data includes tracking numbers: 001, 002, 003 with postal codes 12345, 6789
   - We might still need to limit the length and the frequency of calls from individual german / US numbers.
   - I would decide this based on looking at actual usage data
 - **Partial failures, transactions, concurrency:**
-  - Reschedule, email confirmation happen before final user confirmation in voice agent flow
+  - Reschedule and email confirmation happen currently before final user confirmation in voice agent flow
     1. first look up available timeslots
     2. then confirm user choice in dialogue
     3. then reschedule and send email and fail upon race condition between initial lookup and final reschedule
@@ -70,6 +70,7 @@ Test data includes tracking numbers: 001, 002, 003 with postal codes 12345, 6789
   - How to handle concurrent calls for the same package
     - A robust solution would be to lock packages for rescheduling upon successfull call to verify_package until the end of the call.
     - For a more pragmatic approach (e.g. due to time / complexity reasons), last write wins could be sufficient.
+  - Handle more "user stories": tell him where to get the tracking number, etc.
 - **Handle target times for reschedule properly** (both in agent and backend)
   - time intervals within timezones
   - do not let LLM convert from "tomorrow morning" to timestamp, but do this symbolically in backend
