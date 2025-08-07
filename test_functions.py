@@ -141,3 +141,70 @@ class TestEscalate:
         assert response.status_code == 200
         data = response.json()
         assert data["error_type"] == "email_error"
+
+
+class TestWebhooks:
+    def test_call_ended_success(self, setup):
+        """Test successful call_ended webhook handling"""
+        webhook_payload = {
+            "event": "call_ended",
+            "call": {
+                "call_id": "test-call-123",
+                "agent_id": "agent-456",
+                "agent_version": 1,
+                "call_status": "ended",
+                "call_type": "phone_call",
+                "direction": "inbound",
+                "from_number": "+1234567890",
+                "to_number": "+0987654321",
+                "transcript": "Customer called about package PKG001",
+                "start_timestamp": 1691234567,
+                "end_timestamp": 1691234890
+            }
+        }
+        response = client.post("/api/webhooks/events", json=webhook_payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "success"
+
+    def test_call_ended_no_transcript(self, setup):
+        """Test call_ended webhook with no transcript"""
+        webhook_payload = {
+            "event": "call_ended",
+            "call": {
+                "call_id": "test-call-456",
+                "agent_id": "agent-456",
+                "agent_version": 1,
+                "call_status": "ended",
+                "call_type": "phone_call",
+                "direction": "inbound",
+                "from_number": "+1234567890",
+                "to_number": "+0987654321",
+                "start_timestamp": 1691234567,
+                "end_timestamp": 1691234890
+            }
+        }
+        response = client.post("/api/webhooks/events", json=webhook_payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "success"
+
+    def test_unknown_event_type(self, setup):
+        """Test unknown event type returns validation error"""
+        webhook_payload = {
+            "event": "unknown_event",
+            "call": {
+                "call_id": "test-call-789",
+                "agent_id": "agent-456",
+                "agent_version": 1,
+                "call_status": "ended",
+                "call_type": "phone_call",
+                "direction": "inbound",
+                "from_number": "+1234567890",
+                "to_number": "+0987654321"
+            }
+        }
+        response = client.post("/api/webhooks/events", json=webhook_payload)
+        assert response.status_code == 422  # Validation error for unknown event type
+        data = response.json()
+        assert "detail" in data

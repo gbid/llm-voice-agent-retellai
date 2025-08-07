@@ -9,7 +9,6 @@ EscalationReason = Literal[
 ]
 
 
-# RetellAI Webhook Types
 class RetellWebhookPayload(BaseModel):
     event: Literal["call_started", "call_ended", "call_analyzed"]
     call: CallResponse
