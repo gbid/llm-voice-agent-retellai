@@ -43,6 +43,7 @@ def init_database():
     """)
 
     # Clear existing data and add fresh seed data
+    # TODO: Do not have this here in production!
     conn.execute("DELETE FROM packages")
 
     tomorrow = datetime.now() + timedelta(days=1)
