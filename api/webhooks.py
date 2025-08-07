@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from retell import Retell
 from models import RetellWebhookPayload
 from services.database import (
-    create_call_log, 
+    create_call_log,
     update_call_log_completed_by_retell_call_id,
     get_escalation_info_by_retell_call_id,
     get_package_by_tracking_number,
@@ -47,7 +47,9 @@ async def handle_retell_webhook(request: Request):
                 logger.debug("call_started payload: %s", payload.call)
                 if not payload.call.call_id:
                     logger.error("Missing call_id in call_started webhook")
-                    return JSONResponse(status_code=400, content={"message": "Missing call_id"})
+                    return JSONResponse(
+                        status_code=400, content={"message": "Missing call_id"}
+                    )
                 create_call_log(retell_call_id=payload.call.call_id)
                 return Response(status_code=204)
 
@@ -55,17 +57,25 @@ async def handle_retell_webhook(request: Request):
                 logger.debug("call_ended payload: %s", payload.call)
                 if not payload.call.call_id:
                     logger.error("Missing call_id in call_ended webhook")
-                    return JSONResponse(status_code=400, content={"message": "Missing call_id"})
-                
+                    return JSONResponse(
+                        status_code=400, content={"message": "Missing call_id"}
+                    )
+
                 # TODO: does the RetellAI API guarantee the transcript is present here?
                 transcript = payload.call.transcript or ""
-                update_call_log_completed_by_retell_call_id(payload.call.call_id, transcript)
+                update_call_log_completed_by_retell_call_id(
+                    payload.call.call_id, transcript
+                )
 
                 # Check if this call was escalated and send escalation email with full transcript
-                escalation_info = get_escalation_info_by_retell_call_id(payload.call.call_id)
+                escalation_info = get_escalation_info_by_retell_call_id(
+                    payload.call.call_id
+                )
                 if escalation_info:
-                    package = get_package_by_tracking_number(escalation_info.tracking_number)
-                    
+                    package = get_package_by_tracking_number(
+                        escalation_info.tracking_number
+                    )
+
                     if package:
                         escalation_reason: EscalationReason = "agent_escalation"
                         send_escalation_email(
@@ -75,7 +85,10 @@ async def handle_retell_webhook(request: Request):
                             escalation_reason=escalation_reason,
                             transcript=transcript,
                         )
-                        logger.info("Escalation email sent for tracking %s", package.tracking_number)
+                        logger.info(
+                            "Escalation email sent for tracking %s",
+                            package.tracking_number,
+                        )
 
                 return Response(status_code=204)
 

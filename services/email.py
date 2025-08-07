@@ -102,7 +102,7 @@ def send_escalation_email(
             </ul>
             
             <h3>Call Transcript:</h3>
-            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; white-space: pre-wrap; font-family: monospace; margin: 10px 0;">{transcript if transcript else 'No transcript available'}</div>
+            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; white-space: pre-wrap; font-family: monospace; margin: 10px 0;">{transcript if transcript else "No transcript available"}</div>
         </body>
         </html>
         """,

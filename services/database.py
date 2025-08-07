@@ -76,7 +76,9 @@ def create_call_log(retell_call_id: str, tracking_number: Optional[str] = None) 
         conn.close()
 
 
-def update_call_log_completed_by_retell_call_id(retell_call_id: str, transcript: str) -> bool:
+def update_call_log_completed_by_retell_call_id(
+    retell_call_id: str, transcript: str
+) -> bool:
     """Update call log with transcript and completion time by retell_call_id"""
     conn = get_db_connection()
     try:
@@ -180,7 +182,9 @@ def get_call_transcript_by_retell_call_id(retell_call_id: str) -> Optional[str]:
         conn.close()
 
 
-def get_escalation_info_by_retell_call_id(retell_call_id: str) -> Optional[EscalationInfo]:
+def get_escalation_info_by_retell_call_id(
+    retell_call_id: str,
+) -> Optional[EscalationInfo]:
     """Get escalation info (tracking_number, escalated timestamp) by retell_call_id if escalated"""
     conn = get_db_connection()
     try:
@@ -191,8 +195,7 @@ def get_escalation_info_by_retell_call_id(retell_call_id: str) -> Optional[Escal
         row = cursor.fetchone()
         if row and row["tracking_number"]:  # Ensure tracking_number is not None
             return EscalationInfo(
-                tracking_number=row["tracking_number"],
-                escalated=row["escalated"]
+                tracking_number=row["tracking_number"], escalated=row["escalated"]
             )
         return None
     finally:

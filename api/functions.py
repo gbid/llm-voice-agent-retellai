@@ -207,10 +207,10 @@ async def escalate_package(
     if not retell_call_id:
         logger.error("Missing call_id in escalate request")
         return EmailError(
-            error_type="email_error", 
-            message="Cannot escalate - missing call identification"
+            error_type="email_error",
+            message="Cannot escalate - missing call identification",
         )
-    
+
     update_call_log_escalated_by_retell_call_id(retell_call_id)
 
     return EscalateResponse(
