@@ -70,17 +70,6 @@ def send_escalation_email(
         print("Warning: RESEND_API_KEY not configured")
         return False
 
-    reason_messages = {
-        "verification_failed": "Unable to verify package information",
-        "reschedule_failed": "Issue encountered while rescheduling delivery",
-        "user_declined": "Customer declined proposed rescheduling options",
-        "agent_escalation": "Automated system needs additional assistance",
-    }
-
-    reason_message = reason_messages.get(
-        escalation_reason, "Additional assistance needed"
-    )
-
     params: resend.Emails.SendParams = {
         "from": f"Delivery Service <{source_email}>",
         "to": [escalation_target_email],
@@ -90,13 +79,9 @@ def send_escalation_email(
         <body>
             <h2>Customer Support Escalation</h2>
             
-            <p><strong>Escalation Reason:</strong> {reason_message}</p>
-            
-            <h3>Escalation Details:</h3>
+            <h3>Details:</h3>
             <ul>
                 <li><strong>Tracking Number:</strong> {tracking_number}</li>
-                <li><strong>Escalation Type:</strong> {escalation_reason}</li>
-                <li><strong>Reference ID:</strong> ESC-{tracking_number}-{datetime.now().strftime("%Y%m%d")}</li>
                 <li><strong>Escalated At:</strong> {datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")}</li>
                 {f"<li><strong>Customer Name:</strong> {customer_name}</li>" if customer_name else ""}
                 {f"<li><strong>Customer Email:</strong> {customer_email}</li>" if customer_email else ""}
