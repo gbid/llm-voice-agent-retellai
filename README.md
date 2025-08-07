@@ -52,6 +52,30 @@ Tests cover the voice agent function calls (verify, reschedule, escalate) and Re
 
 Test data includes tracking numbers: 001, 002, 003 with postal codes 12345, 67890, 54321.
 
+## Project Structure
+
+```
+.
+├── api/                       # FastAPI route handlers
+│   ├── dashboard.py           # Dashboard GET endpoints
+│   ├── functions.py           # Voice agent function calls
+│   ├── health.py              # Health check endpoint
+│   └── webhooks.py            # RetellAI webhook handler
+├── services/
+│   ├── database.py            # SQLite queries
+│   └── email.py               # Email sending (Resend API)
+├── static/
+│   └── dashboard.html         # Rough dashboard for demo video
+├── main.py                    # FastAPI entry point
+├── models.py                  # Pydantic models and type definitions
+├── database.py                # Database schema and initialization
+├── test_functions.py          # API endpoint tests
+├── delivery_service.db        # SQLite database file
+├── retellai-voice-agent.json  # RetellAI agent configuration
+├── .env                       # Environment variables (API keys)
+└── requirements.txt           # Python dependencies
+```
+
 ## TODO - What I'd do with more time
 
 - **Rate limiting** (RetellAI calls are expensive)
