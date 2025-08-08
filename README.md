@@ -2,6 +2,9 @@
 
 Voice AI agent for rescheduling package deliveries. Built with RetellAI.com, FastAPI, and SQLite.
 
+Loom video available at:
+[Loom video](https://www.loom.com/share/644e6619f81446918f7624de9d176244?sid=9e7b8bb9-30ae-4016-8c11-f4f626dc3f39)
+
 ## Setup
 
 ```bash
