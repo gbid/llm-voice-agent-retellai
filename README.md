@@ -25,9 +25,10 @@ ngrok http 8000
 
 # Update retellai-voice-agent.json with your ngrok URL before importing
 # Replace "https://5abb81e0ed13.ngrok-free.app" with your ngrok URL (3 occurrences)
+# Add {ngrok_bas_url}/api/webhooks/events to global webhook settings in retellai.com
 
-# Import retellai-voice-agent.json into RetellAI Web GUI (dashboard)
-# Go to RetellAI dashboard > Agents > Import Agent
+# Import retellai-voice-agent.json into RetellAI Web GUI (dashboard):
+#   - Go to RetellAI dashboard > Agents > Import Agent and select retellai-voice-agent.json
 
 # Run server (in separate terminal)
 uvicorn main:app --reload
