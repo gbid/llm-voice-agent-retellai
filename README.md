@@ -126,4 +126,5 @@ Test data includes tracking numbers: 001, 002, 003 with postal codes 12345, 6789
   - I guess technically, a caller needs the same info (tracking_number, postal_code) to call the endpoint directly as calling it via the RetellAI voice agent.
     However, we still do not want to prevent direct API access to the functionality for security reasons.
 - **Serverless deployment** - Deploy to AWS Lambda/Vercel/Railway as mentioned in problem statement instead of local server
+- **Function call endpoints HTTP verbs**: all our /api/functions endpoints are POST currently, despite `verify_package` being idempotent (should probably be GET) and `reschedule` being idempotent up to the email notification being sent (might still be POST because of this email).
 - **Bonus exercise from problem statement** (Post-Call QA with LLM and call log)
