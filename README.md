@@ -1,9 +1,10 @@
 # Delivery Rescheduling Voice AI
 
-Voice AI agent for rescheduling package deliveries. Built with RetellAI.com, FastAPI, and SQLite.
+A personal exploration project experimenting with:
+1. **LLM Voice Agents** using RetellAI for function calling
+2. **Python/FastAPI** development (coming from a Rust/Axum background)
 
-Loom video available at:
-[Loom video](https://www.loom.com/share/644e6619f81446918f7624de9d176244?sid=9e7b8bb9-30ae-4016-8c11-f4f626dc3f39)
+Builds a voice AI agent for rescheduling package deliveries using RetellAI.com, FastAPI, and SQLite.
 
 ## Setup
 
@@ -15,9 +16,7 @@ pip install -r requirements.txt
 # Add your API keys to .env
 cp .env.example .env
 
-# Replace email addresses with your own for testing
-# In services/email.py: replace "escalation@bidlingmaier.net" with your email
-# In database.py: replace "gunther@bidlingmaier.net" with your email (3 occurrences)
+# Update email addresses in services/email.py and database.py with your own emails
 
 # Initialize database with test data
 python database.py
@@ -94,7 +93,7 @@ Test data includes tracking numbers: 001, 002, 003 with postal codes 12345, 6789
 └── requirements.txt           # Python dependencies
 ```
 
-## TODO - What I'd do with more time
+## Improvements & Learning Notes
 
 - **Rate limiting** (RetellAI calls are expensive)
   - Probably based on phone numbers since they are restricted heavily (at least german phone numbers)
@@ -112,7 +111,6 @@ Test data includes tracking numbers: 001, 002, 003 with postal codes 12345, 6789
   - How to handle concurrent calls for the same package
     - A robust solution would be to lock packages for rescheduling upon successfull call to verify_package until the end of the call.
     - For a more pragmatic approach (e.g. due to time / complexity reasons), last write wins could be sufficient.
-  - Handle more "user stories": tell him where to get the tracking number, etc.
 - **Handle target times for reschedule properly** (both in agent and backend)
   - time intervals within timezones
   - do not let LLM convert from "tomorrow morning" to timestamp, but do this symbolically in backend
@@ -120,11 +118,7 @@ Test data includes tracking numbers: 001, 002, 003 with postal codes 12345, 6789
 - **Logging and Monitoring**
   - log errors, escalations
   - monitor number of ongoing calls, number of escalations in last hour / day / week using Grafana or similar tools
-- **More states for delivery**
-- **More robust authentication of calls** based on phone number saved in package details
 - **Function call authentication** - Currently only webhook calls are signature-verified, but function calls (/api/functions/*) should also be authenticated to prevent unauthorized access
   - I guess technically, a caller needs the same info (tracking_number, postal_code) to call the endpoint directly as calling it via the RetellAI voice agent.
     However, we still do not want to prevent direct API access to the functionality for security reasons.
-- **Serverless deployment** - Deploy to AWS Lambda/Vercel/Railway as mentioned in problem statement instead of local server
 - **Function call endpoints HTTP verbs**: all our /api/functions endpoints are POST currently, despite `verify_package` being idempotent (should probably be GET) and `reschedule` being idempotent up to the email notification being sent (might still be POST because of this email).
-- **Bonus exercise from problem statement** (Post-Call QA with LLM and call log)
